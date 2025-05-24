@@ -266,7 +266,7 @@ function App() {
       </button>
       <footer>
         <small>
-          Made by <a href="https://github.com/mathpunch" target="_blank" rel="noopener noreferrer">mathpunch</a> – Ready for Vercel 🚀
+          Made by <a href="https://aboutozzy.vercel.app/" target="_blank" rel="noopener noreferrer">Made By Ozzy</a> – About Me
         </small>
       </footer>
     </div>
