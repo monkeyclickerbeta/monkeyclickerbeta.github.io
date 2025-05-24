@@ -11,6 +11,7 @@ const BAN_DURATION = 10000
 
 const ADMIN_PASSWORD = "adminozzyonly1122";
 const BANNED_KEY = "monkeyclicker-banned";
+const ADMIN_AUTH_KEY = "monkeyclicker-admin-auth";
 
 const upgradesData = [
   { name: "Banana Gloves", desc: "+1 money per click", cost: 50, clickBoost: 1 },
@@ -55,6 +56,8 @@ function Confetti({ show }) {
 
 function App() {
   const [isBanned, setIsBanned] = useState(localStorage.getItem(BANNED_KEY) === "true");
+  const [isAdminRemembered, setIsAdminRemembered] = useState(localStorage.getItem(ADMIN_AUTH_KEY) === "true");
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Save/load game progress
   const getInitialState = () => {
@@ -225,6 +228,13 @@ function App() {
   // Admin Panel Password prompt
   function handleAdminAccess() {
     if (isBanned) return;
+    if (isAdminRemembered) {
+      setAdminAuth(true);
+      setShowAdmin(true);
+      setAdminTry(false);
+      setAdminInput("");
+      return;
+    }
     setAdminTry(true);
     setAdminInput("");
   }
@@ -235,8 +245,11 @@ function App() {
       setShowAdmin(true);
       setAdminTry(false);
       setAdminInput("");
+      if (rememberMe) {
+        localStorage.setItem(ADMIN_AUTH_KEY, "true");
+        setIsAdminRemembered(true);
+      }
     } else {
-      // Ban forever
       localStorage.setItem(BANNED_KEY, "true");
       setIsBanned(true);
       alert("You are banned forever from the admin panel due to incorrect password.");
@@ -247,6 +260,12 @@ function App() {
   function handleAdminPanelClose() {
     setShowAdmin(false);
     setAdminAuth(false);
+  }
+  function handleAdminLogout() {
+    localStorage.removeItem(ADMIN_AUTH_KEY);
+    setIsAdminRemembered(false);
+    setAdminAuth(false);
+    setShowAdmin(false);
   }
 
   if (isBanned) {
@@ -340,6 +359,15 @@ function App() {
               onChange={e => setAdminInput(e.target.value)}
               autoFocus
             />
+            <div style={{marginTop:"1em"}}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={e => setRememberMe(e.target.checked)}
+                /> Remember me
+              </label>
+            </div>
             <div style={{marginTop: "1em"}}>
               <button type="submit" className="admin-apply-btn">Enter</button>
               <button type="button" className="admin-close-btn" onClick={()=>setAdminTry(false)} style={{marginLeft:"1em"}}>Cancel</button>
@@ -354,6 +382,7 @@ function App() {
           monkeyRank={monkeyRank}
           setMonkeyRank={setMonkeyRank}
           onClose={handleAdminPanelClose}
+          onLogout={handleAdminLogout}
         />
       )}
       <footer>
