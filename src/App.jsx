@@ -333,16 +333,18 @@ function App() {
       </div>
       {showUpgrades && (
         <div className="upgrade-popup centered-popup">
-          <h3>Buy Upgrades</h3>
-          {upgradesData.map((upg, idx) => (
-            !upgrades.includes(upg.name) &&
-            <button key={upg.name} className="upgrade-option" onClick={() => buyUpgrade(upg, idx)} disabled={money < upg.cost}>
-              <b>{upg.name}</b><br />
-              <span>{upg.desc}</span><br />
-              <span>Cost: {upg.cost} money</span>
-            </button>
-          ))}
-          <button className="close-upgrades" onClick={() => setShowUpgrades(false)}>Close</button>
+          <div className="upgrade-popup-scroll">
+            <h3>Buy Upgrades</h3>
+            {upgradesData.map((upg, idx) => (
+              !upgrades.includes(upg.name) &&
+              <button key={upg.name} className="upgrade-option" onClick={() => buyUpgrade(upg, idx)} disabled={money < upg.cost}>
+                <b>{upg.name}</b><br />
+                <span>{upg.desc}</span><br />
+                <span>Cost: {upg.cost} money</span>
+              </button>
+            ))}
+            <button className="close-upgrades" onClick={() => setShowUpgrades(false)}>Close</button>
+          </div>
         </div>
       )}
       <button className="reset-btn" onClick={resetProgress} style={{marginTop: "1rem"}}>
