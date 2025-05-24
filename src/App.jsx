@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import './App.css'
 
+const CPS_THRESHOLD = 20         // Max allowed clicks per second
+const INTERVAL_COUNT = 15        // How many intervals to check for consistency
+const INTERVAL_TOLERANCE = 50    // ms tolerance for "robotic" clicks
+
 const upgradesData = [
+  // ... (no changes to upgradesData)
   {
     name: "Banana Gloves",
     desc: "+1 money per click",
@@ -79,7 +84,7 @@ function Confetti({ show }) {
 }
 
 function App() {
-  // Try to load progress from localStorage, fallback to defaults
+  // Load/save game progress as before
   const getInitialState = () => {
     const save = localStorage.getItem('monkeyclicker-save')
     if (save) {
@@ -93,7 +98,6 @@ function App() {
           upgrades: obj.upgrades ?? [],
         }
       } catch {
-        // If corrupted, fallback to defaults
         return {
           money: 0,
           monkeyRank: 1,
@@ -188,27 +192,27 @@ function App() {
     const now = Date.now()
     clickTimestamps.current.push(now)
 
-    // Only keep last 30 clicks
-    if (clickTimestamps.current.length > 30) {
-      clickTimestamps.current = clickTimestamps.current.slice(-30)
+    // Only keep last 40 clicks for analysis
+    if (clickTimestamps.current.length > 40) {
+      clickTimestamps.current = clickTimestamps.current.slice(-40)
     }
 
-    // 1. CPS Check: 15+ clicks in the last second (was 10)
+    // 1. CPS Check: 20+ clicks in the last second
     const oneSecAgo = now - 1000
     const recentClicks = clickTimestamps.current.filter(ts => ts > oneSecAgo)
-    if (recentClicks.length > 15) {
+    if (recentClicks.length > CPS_THRESHOLD) {
       triggerAutoClickerWarning()
       return
     }
 
-    // 2. Consistent Interval Check: 10+ consecutive clicks within ±30ms interval (was 8/±15ms)
-    if (clickTimestamps.current.length >= 11) {
+    // 2. Consistent Interval Check: 15+ consecutive clicks within ±50ms interval
+    if (clickTimestamps.current.length >= INTERVAL_COUNT + 1) {
       const intervals = clickTimestamps.current
-        .slice(-11)
+        .slice(-INTERVAL_COUNT - 1)
         .map((t, i, arr) => i > 0 ? t - arr[i - 1] : null)
         .slice(1)
       const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length
-      const allClose = intervals.every(i => Math.abs(i - avg) < 30)
+      const allClose = intervals.every(i => Math.abs(i - avg) < INTERVAL_TOLERANCE)
       if (allClose) {
         triggerAutoClickerWarning()
         return
