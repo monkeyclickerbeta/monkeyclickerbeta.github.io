@@ -154,7 +154,7 @@ footer {
 
 .confetti {
   position: absolute;
-  top: 30%;
+  top: 18%;
   width: 18px;
   height: 10px;
   border-radius: 3px;
@@ -177,35 +177,54 @@ footer {
   }
 }
 
-.confetti-text {
+.confetti-text-upgrade {
   position: absolute;
-  top: 42%;
+  top: 22%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: #ffb700;
-  text-shadow: 1px 3px 10px #fffbe9, 0 2px #d9b300;
-  pointer-events: none;
+  transform: translate(-50%, -60%);
+  font-size: 3.2rem;
+  font-weight: 900;
+  color: #fffbe9;
+  padding: 0.5rem 2.5rem;
+  border-radius: 20px;
+  background: linear-gradient(90deg, #ffc700 70%, #fffbe9 100%);
+  box-shadow: 0 0 40px 10px #ffd70099, 0 2px #d9b300;
+  opacity: 0.98;
+  letter-spacing: 0.08em;
+  text-shadow:
+    0 0 12px #d9b300,
+    2px 2px 4px #fffbe9,
+    0 4px 24px #ffd700cc,
+    0 2px 0 #7c6f00,
+    0 0 2px #ffed66;
   animation: pop-text 1.5s ease;
   user-select: none;
+  border: 4px solid #d9b300;
+}
+
+.confetti-text-shadow {
+  text-shadow:
+    0 0 16px #fff,
+    1px 1px 6px #d9b300,
+    0 2px 2px #fffbe9,
+    0 0 1px #ffed66;
 }
 
 @keyframes pop-text {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.4);
+    transform: translate(-50%, -60%) scale(0.4);
   }
   20% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.12);
+    transform: translate(-50%, -60%) scale(1.18);
   }
   80% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, -60%) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.7);
+    transform: translate(-50%, -60%) scale(0.8);
   }
 }
