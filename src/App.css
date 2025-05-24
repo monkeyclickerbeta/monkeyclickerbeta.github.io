@@ -113,7 +113,6 @@ body {
   justify-content: center;
 }
 
-/* Optional: make the menu even more mobile friendly */
 @media (max-width: 600px) {
   .upgrade-popup {
     max-width: 95vw;
@@ -291,4 +290,53 @@ footer {
   50% { transform: translateX(8px);}
   70% { transform: translateX(-8px);}
   100% { transform: translateX(0px);}
+}
+
+/* Admin Panel styles */
+.admin-panel-overlay {
+  position: fixed;
+  z-index: 99999;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-panel {
+  background: #fffbe9;
+  border: 3px solid #ffd700;
+  border-radius: 12px;
+  box-shadow: 0 2px 18px #ffd70033;
+  padding: 2rem 2.5rem;
+  min-width: 260px;
+  max-width: 90vw;
+  text-align: center;
+}
+
+.admin-panel input[type="number"], .admin-panel input[type="text"], .admin-panel input[type="password"] {
+  font-size: 1.1rem;
+  padding: 0.25em 0.6em;
+  border: 1.5px solid #d9b300;
+  border-radius: 5px;
+  width: 120px;
+  margin-top: 0.5em;
+}
+
+.admin-apply-btn, .admin-close-btn {
+  padding: 0.6em 2em;
+  border-radius: 7px;
+  border: 2px solid #d9b300;
+  background: #ffe066;
+  color: #7c6f00;
+  font-size: 1rem;
+  font-weight: bold;
+  margin-top: 0.5em;
+  cursor: pointer;
+  transition: background 0.13s;
+}
+
+.admin-apply-btn:hover, .admin-close-btn:hover {
+  background: #fff3bf;
+  border-color: #ffc700;
 }
