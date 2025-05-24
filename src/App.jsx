@@ -22,6 +22,36 @@ const upgradesData = [
   },
 ]
 
+function Confetti({ show }) {
+  if (!show) return null
+  // 20 pieces of confetti with random styles
+  const pieces = Array.from({ length: 20 })
+  return (
+    <div className="confetti-container">
+      {pieces.map((_, i) => {
+        const left = Math.random() * 90 + 5
+        const animationDuration = Math.random() * 0.8 + 1.2
+        const rotate = Math.random() * 360
+        const colors = ['#FFD700', '#FF5E5B', '#66D7D1', '#FFED66', '#6A4C93']
+        const color = colors[i % colors.length]
+        return (
+          <div
+            key={i}
+            className="confetti"
+            style={{
+              left: `${left}%`,
+              background: color,
+              animationDuration: `${animationDuration}s`,
+              transform: `rotate(${rotate}deg)`,
+            }}
+          />
+        )
+      })}
+      <div className="confetti-text">Level Up!</div>
+    </div>
+  )
+}
+
 function App() {
   const [money, setMoney] = useState(0)
   const [level, setLevel] = useState(1)
@@ -29,12 +59,16 @@ function App() {
   const [autoClick, setAutoClick] = useState(0)
   const [upgrades, setUpgrades] = useState([])
   const [showUpgrades, setShowUpgrades] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
 
-  // Level up at every 100 * level money (just increase level, no upgrade popup)
+  // Level up at every 100 * level money (just increase level, show confetti)
   React.useEffect(() => {
     if (money >= level * 100) {
       setLevel((lvl) => lvl + 1)
+      setShowConfetti(true)
+      setTimeout(() => setShowConfetti(false), 1500)
     }
+    // eslint-disable-next-line
   }, [money, level])
 
   // Auto-click effect
@@ -58,6 +92,7 @@ function App() {
 
   return (
     <div className="app">
+      <Confetti show={showConfetti} />
       <h1>🐒 Monkey Clicker</h1>
       <div className="stats">
         <span>Money: <b>{money}</b></span>
