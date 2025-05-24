@@ -30,11 +30,10 @@ function App() {
   const [upgrades, setUpgrades] = useState([])
   const [showUpgrades, setShowUpgrades] = useState(false)
 
-  // Level up at every 100 * level money
+  // Level up at every 100 * level money (just increase level, no upgrade popup)
   React.useEffect(() => {
     if (money >= level * 100) {
       setLevel((lvl) => lvl + 1)
-      setShowUpgrades(true)
     }
   }, [money, level])
 
@@ -55,7 +54,6 @@ function App() {
     if (upgrade.clickBoost) setClickValue((v) => v + upgrade.clickBoost)
     if (upgrade.autoClick) setAutoClick((a) => a + upgrade.autoClick)
     setUpgrades((u) => [...u, upgrade.name])
-    setShowUpgrades(false)
   }
 
   return (
@@ -70,8 +68,11 @@ function App() {
         <div>Click me!</div>
         <div className="per-click">+{clickValue} per click</div>
       </button>
+      <button className="upgrades-menu-btn" onClick={() => setShowUpgrades(true)}>
+        🛒 Upgrades
+      </button>
       <div className="upgrade-list">
-        <h2>Upgrades</h2>
+        <h2>Owned Upgrades</h2>
         <ul>
           {upgrades.map((name, i) => (
             <li key={i}>✓ {name}</li>
@@ -80,7 +81,7 @@ function App() {
       </div>
       {showUpgrades && (
         <div className="upgrade-popup">
-          <h3>🎉 Level Up! Choose an upgrade:</h3>
+          <h3>Buy Upgrades</h3>
           {upgradesData.map((upg, idx) => (
             !upgrades.includes(upg.name) &&
             <button key={upg.name} className="upgrade-option" onClick={() => buyUpgrade(upg, idx)} disabled={money < upg.cost}>
