@@ -17,7 +17,7 @@ const upgradesData = [
   {
     name: "Golden Banana",
     desc: "+5 money per click",
-    cost: 400, // changed from 500 to 400
+    cost: 400,
     clickBoost: 5,
   },
   {
@@ -29,19 +29,19 @@ const upgradesData = [
   {
     name: "Big Monkey Hands",
     desc: "+25 money per click",
-    cost: 2500,
+    cost: 1500, // changed from 2500 to 1500
     clickBoost: 25,
   },
   {
     name: "Banana Factory",
     desc: "+25 auto-click per second",
-    cost: 8000,
+    cost: 2500, // changed from 8000 to 2500
     autoClick: 25,
   },
   {
     name: "Super Golden Banana",
     desc: "+100 money per click, +100 auto-click per second",
-    cost: 25000,
+    cost: 15000, // changed from 25000 to 15000
     clickBoost: 100,
     autoClick: 100,
   },
@@ -49,7 +49,6 @@ const upgradesData = [
 
 function Confetti({ show }) {
   if (!show) return null
-  // 20 pieces of confetti with random styles
   const pieces = Array.from({ length: 20 })
   return (
     <div className="confetti-container">
@@ -93,7 +92,7 @@ function App() {
     if (money >= level * 100) {
       setLevel((lvl) => lvl + 1)
       setShowConfetti(true)
-      setTimeout(() => setShowConfetti(false), 1700)
+      setTimeout(() => setShowConfetti(false), 1300) // slightly shorter for smooth fade
     }
     // eslint-disable-next-line
   }, [money, level])
@@ -142,7 +141,7 @@ function App() {
         </ul>
       </div>
       {showUpgrades && (
-        <div className="upgrade-popup">
+        <div className="upgrade-popup centered-popup">
           <h3>Buy Upgrades</h3>
           {upgradesData.map((upg, idx) => (
             !upgrades.includes(upg.name) &&
