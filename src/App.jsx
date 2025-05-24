@@ -266,7 +266,7 @@ function App() {
       </button>
       <footer>
         <small>
-          Made by <a href="https://aboutozzy.vercel.app/" target="_blank" rel="noopener noreferrer">Made By Ozzy</a> – About Me
+          Made by Ozzy <a href="https://aboutozzy.vercel.app/" target="_blank" rel="noopener noreferrer">About Me</a> – Have Fun
         </small>
       </footer>
     </div>
