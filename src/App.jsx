@@ -1,55 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react'
 import './App.css'
 
-const CPS_THRESHOLD = 20         // Max allowed clicks per second
-const INTERVAL_COUNT = 15        // How many intervals to check for consistency
-const INTERVAL_TOLERANCE = 50    // ms tolerance for "robotic" clicks
+// --- Detection thresholds ---
+const CPS_THRESHOLD = 30;         // Max allowed clicks per second
+const INTERVAL_COUNT = 25;        // How many intervals to check for consistency
+const INTERVAL_TOLERANCE = 100;   // ms tolerance for "robotic" clicks
+const MAX_STRIKES = 3;            // How many suspicious detections before lockout
+const STRIKE_WINDOW = 30000;      // ms window for counting strikes
 
 const upgradesData = [
-  // ... (no changes to upgradesData)
-  {
-    name: "Banana Gloves",
-    desc: "+1 money per click",
-    cost: 50,
-    clickBoost: 1,
-  },
-  {
-    name: "Monkey Friend",
-    desc: "Auto-clicks every second",
-    cost: 200,
-    autoClick: 1,
-  },
-  {
-    name: "Golden Banana",
-    desc: "+5 money per click",
-    cost: 400,
-    clickBoost: 5,
-  },
-  {
-    name: "Banana Farm",
-    desc: "+5 auto-click per second",
-    cost: 900,
-    autoClick: 5,
-  },
-  {
-    name: "Big Monkey Hands",
-    desc: "+25 money per click",
-    cost: 1500,
-    clickBoost: 25,
-  },
-  {
-    name: "Banana Factory",
-    desc: "+25 auto-click per second",
-    cost: 2500,
-    autoClick: 25,
-  },
-  {
-    name: "Super Golden Banana",
-    desc: "+100 money per click, +100 auto-click per second",
-    cost: 15000,
-    clickBoost: 100,
-    autoClick: 100,
-  },
+  { name: "Banana Gloves", desc: "+1 money per click", cost: 50, clickBoost: 1 },
+  { name: "Monkey Friend", desc: "Auto-clicks every second", cost: 200, autoClick: 1 },
+  { name: "Golden Banana", desc: "+5 money per click", cost: 400, clickBoost: 5 },
+  { name: "Banana Farm", desc: "+5 auto-click per second", cost: 900, autoClick: 5 },
+  { name: "Big Monkey Hands", desc: "+25 money per click", cost: 1500, clickBoost: 25 },
+  { name: "Banana Factory", desc: "+25 auto-click per second", cost: 2500, autoClick: 25 },
+  { name: "Super Golden Banana", desc: "+100 money per click, +100 auto-click per second", cost: 15000, clickBoost: 100, autoClick: 100 },
 ]
 
 function Confetti({ show }) {
@@ -84,7 +50,7 @@ function Confetti({ show }) {
 }
 
 function App() {
-  // Load/save game progress as before
+  // Save/load game progress
   const getInitialState = () => {
     const save = localStorage.getItem('monkeyclicker-save')
     if (save) {
@@ -98,22 +64,10 @@ function App() {
           upgrades: obj.upgrades ?? [],
         }
       } catch {
-        return {
-          money: 0,
-          monkeyRank: 1,
-          clickValue: 1,
-          autoClick: 0,
-          upgrades: [],
-        }
+        return { money: 0, monkeyRank: 1, clickValue: 1, autoClick: 0, upgrades: [] }
       }
     } else {
-      return {
-        money: 0,
-        monkeyRank: 1,
-        clickValue: 1,
-        autoClick: 0,
-        upgrades: [],
-      }
+      return { money: 0, monkeyRank: 1, clickValue: 1, autoClick: 0, upgrades: [] }
     }
   }
 
@@ -129,18 +83,14 @@ function App() {
   const [autoClickerWarning, setAutoClickerWarning] = useState(false)
   const [clickDisabled, setClickDisabled] = useState(false)
   const clickTimestamps = useRef([])
+  const [strikes, setStrikes] = useState([])
+  const [strikeCount, setStrikeCount] = useState(0)
 
   // Save progress to localStorage whenever relevant state changes
   useEffect(() => {
     localStorage.setItem(
       'monkeyclicker-save',
-      JSON.stringify({
-        money,
-        monkeyRank,
-        clickValue,
-        autoClick,
-        upgrades,
-      })
+      JSON.stringify({ money, monkeyRank, clickValue, autoClick, upgrades })
     )
   }, [money, monkeyRank, clickValue, autoClick, upgrades])
 
@@ -163,6 +113,19 @@ function App() {
       return () => clearInterval(interval)
     }
   }, [autoClick])
+
+  // --- Strike expiry ---
+  useEffect(() => {
+    if (strikes.length === 0) return
+    const interval = setInterval(() => {
+      const now = Date.now()
+      const filtered = strikes.filter(t => now - t < STRIKE_WINDOW)
+      setStrikes(filtered)
+      setStrikeCount(filtered.length)
+    }, 1000)
+    return () => clearInterval(interval)
+    // eslint-disable-next-line
+  }, [strikes])
 
   // Upgrade purchase
   function buyUpgrade(upgrade, idx) {
@@ -192,20 +155,18 @@ function App() {
     const now = Date.now()
     clickTimestamps.current.push(now)
 
-    // Only keep last 40 clicks for analysis
-    if (clickTimestamps.current.length > 40) {
-      clickTimestamps.current = clickTimestamps.current.slice(-40)
+    // Only keep last 60 clicks for analysis
+    if (clickTimestamps.current.length > 60) {
+      clickTimestamps.current = clickTimestamps.current.slice(-60)
     }
 
-    // 1. CPS Check: 20+ clicks in the last second
+    // 1. CPS Check: 30+ clicks in the last second
     const oneSecAgo = now - 1000
     const recentClicks = clickTimestamps.current.filter(ts => ts > oneSecAgo)
-    if (recentClicks.length > CPS_THRESHOLD) {
-      triggerAutoClickerWarning()
-      return
-    }
+    let suspicious = false
+    if (recentClicks.length > CPS_THRESHOLD) suspicious = true
 
-    // 2. Consistent Interval Check: 15+ consecutive clicks within ±50ms interval
+    // 2. Consistent Interval Check: 25+ consecutive clicks within ±100ms interval
     if (clickTimestamps.current.length >= INTERVAL_COUNT + 1) {
       const intervals = clickTimestamps.current
         .slice(-INTERVAL_COUNT - 1)
@@ -213,23 +174,28 @@ function App() {
         .slice(1)
       const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length
       const allClose = intervals.every(i => Math.abs(i - avg) < INTERVAL_TOLERANCE)
-      if (allClose) {
-        triggerAutoClickerWarning()
-        return
+      if (allClose) suspicious = true
+    }
+
+    if (suspicious) {
+      const now = Date.now()
+      const newStrikes = strikes.filter(t => now - t < STRIKE_WINDOW).concat(now)
+      setStrikes(newStrikes)
+      setStrikeCount(newStrikes.length)
+      setAutoClickerWarning(true)
+      setTimeout(() => setAutoClickerWarning(false), 1800)
+      if (newStrikes.length >= MAX_STRIKES) {
+        setClickDisabled(true)
+        setTimeout(() => {
+          setClickDisabled(false)
+          setStrikes([])
+          setStrikeCount(0)
+        }, 8000)
       }
+      return
     }
 
     setMoney(m => m + clickValue)
-  }
-
-  function triggerAutoClickerWarning() {
-    setAutoClickerWarning(true)
-    setClickDisabled(true)
-    setTimeout(() => {
-      setAutoClickerWarning(false)
-      setClickDisabled(false)
-      clickTimestamps.current = []
-    }, 5000)
   }
 
   return (
@@ -242,8 +208,12 @@ function App() {
       </div>
       {autoClickerWarning && (
         <div className="autoclicker-warning">
-          🚨 Autoclicker detected! Play fair!<br/>
-          Clicking disabled for 5 seconds.
+          🚨 Autoclicker suspicious clicking detected!
+          <br />
+          {strikeCount < MAX_STRIKES
+            ? <>({strikeCount}/{MAX_STRIKES} strikes)</>
+            : <>Clicking disabled for 8 seconds.</>
+          }
         </div>
       )}
       <button
