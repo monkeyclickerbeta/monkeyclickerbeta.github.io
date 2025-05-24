@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react'
 import './App.css'
 import AdminPanel from './AdminPanel'
 
-// --- Detection thresholds (tunable) ---
 const CPS_THRESHOLD = 40
 const INTERVAL_COUNT = 30
 const INTERVAL_TOLERANCE = 120
@@ -10,7 +9,8 @@ const MAX_STRIKES = 3
 const STRIKE_WINDOW = 60000
 const BAN_DURATION = 10000
 
-const ADMIN_PASSWORD = "adminozzyonly1122"; // <-- your chosen admin password
+const ADMIN_PASSWORD = "adminozzyonly1122";
+const BANNED_KEY = "monkeyclicker-banned";
 
 const upgradesData = [
   { name: "Banana Gloves", desc: "+1 money per click", cost: 50, clickBoost: 1 },
@@ -54,6 +54,8 @@ function Confetti({ show }) {
 }
 
 function App() {
+  const [isBanned, setIsBanned] = useState(localStorage.getItem(BANNED_KEY) === "true");
+
   // Save/load game progress
   const getInitialState = () => {
     const save = localStorage.getItem('monkeyclicker-save')
@@ -222,6 +224,7 @@ function App() {
 
   // Admin Panel Password prompt
   function handleAdminAccess() {
+    if (isBanned) return;
     setAdminTry(true);
     setAdminInput("");
   }
@@ -233,13 +236,39 @@ function App() {
       setAdminTry(false);
       setAdminInput("");
     } else {
-      alert("Incorrect password.");
+      // Ban forever
+      localStorage.setItem(BANNED_KEY, "true");
+      setIsBanned(true);
+      alert("You are banned forever from the admin panel due to incorrect password.");
+      setAdminTry(false);
       setAdminInput("");
     }
   }
   function handleAdminPanelClose() {
     setShowAdmin(false);
     setAdminAuth(false);
+  }
+
+  if (isBanned) {
+    return (
+      <div className="app">
+        <div
+          style={{
+            marginTop: "5rem",
+            color: "#fff",
+            background: "#b80000",
+            padding: "3rem 2rem",
+            borderRadius: "2rem",
+            fontSize: "2.2rem",
+            fontWeight: "bold",
+            boxShadow: "0 0 50px #b8000090",
+          }}
+        >
+          🚫 You are <span style={{color:"#ffd700"}}>BANNED</span> from this site.<br/>
+          <span style={{fontSize:"1.1rem", color:"#fffbe9"}}>This ban is permanent due to an incorrect admin password attempt.</span>
+        </div>
+      </div>
+    );
   }
 
   return (
