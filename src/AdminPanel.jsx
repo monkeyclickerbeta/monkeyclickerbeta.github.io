@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function AdminPanel({ money, setMoney, monkeyRank, setMonkeyRank, onClose }) {
+export default function AdminPanel({ money, setMoney, monkeyRank, setMonkeyRank, onClose, onLogout }) {
   const [moneyInput, setMoneyInput] = useState(money);
   const [rankInput, setRankInput] = useState(monkeyRank);
 
@@ -40,6 +40,7 @@ export default function AdminPanel({ money, setMoney, monkeyRank, setMonkeyRank,
           <button className="admin-apply-btn" onClick={handleApply}>Apply</button>
           <button className="admin-close-btn" onClick={onClose} style={{marginLeft:"1em"}}>Close</button>
         </div>
+        <button className="admin-close-btn" onClick={onLogout} style={{marginTop:"1em"}}>Log out of admin</button>
       </div>
     </div>
   );
