@@ -185,38 +185,36 @@ function App() {
   function handleMonkeyClick() {
     if (clickDisabled) return
 
-    // Add timestamp for this click
     const now = Date.now()
     clickTimestamps.current.push(now)
 
-    // Only keep last 20 clicks
-    if (clickTimestamps.current.length > 20) {
-      clickTimestamps.current = clickTimestamps.current.slice(-20)
+    // Only keep last 30 clicks
+    if (clickTimestamps.current.length > 30) {
+      clickTimestamps.current = clickTimestamps.current.slice(-30)
     }
 
-    // 1. CPS Check: 10+ clicks in the last second
+    // 1. CPS Check: 15+ clicks in the last second (was 10)
     const oneSecAgo = now - 1000
     const recentClicks = clickTimestamps.current.filter(ts => ts > oneSecAgo)
-    if (recentClicks.length > 10) {
+    if (recentClicks.length > 15) {
       triggerAutoClickerWarning()
       return
     }
 
-    // 2. Consistent Interval Check: 7+ consecutive clicks within ±15ms interval
-    if (clickTimestamps.current.length >= 8) {
+    // 2. Consistent Interval Check: 10+ consecutive clicks within ±30ms interval (was 8/±15ms)
+    if (clickTimestamps.current.length >= 11) {
       const intervals = clickTimestamps.current
-        .slice(-8)
+        .slice(-11)
         .map((t, i, arr) => i > 0 ? t - arr[i - 1] : null)
         .slice(1)
       const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length
-      const allClose = intervals.every(i => Math.abs(i - avg) < 15)
+      const allClose = intervals.every(i => Math.abs(i - avg) < 30)
       if (allClose) {
         triggerAutoClickerWarning()
         return
       }
     }
 
-    // If not suspicious, process click
     setMoney(m => m + clickValue)
   }
 
@@ -227,7 +225,7 @@ function App() {
       setAutoClickerWarning(false)
       setClickDisabled(false)
       clickTimestamps.current = []
-    }, 5000) // 5 seconds lockout
+    }, 5000)
   }
 
   return (
