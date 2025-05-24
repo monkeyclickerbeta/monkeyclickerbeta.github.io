@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import './App.css'
 
 const upgradesData = [
@@ -29,19 +29,19 @@ const upgradesData = [
   {
     name: "Big Monkey Hands",
     desc: "+25 money per click",
-    cost: 1500, // changed from 2500 to 1500
+    cost: 1500,
     clickBoost: 25,
   },
   {
     name: "Banana Factory",
     desc: "+25 auto-click per second",
-    cost: 2500, // changed from 8000 to 2500
+    cost: 2500,
     autoClick: 25,
   },
   {
     name: "Super Golden Banana",
     desc: "+100 money per click, +100 auto-click per second",
-    cost: 15000, // changed from 25000 to 15000
+    cost: 15000,
     clickBoost: 100,
     autoClick: 100,
   },
@@ -79,26 +79,74 @@ function Confetti({ show }) {
 }
 
 function App() {
-  const [money, setMoney] = useState(0)
-  const [level, setLevel] = useState(1)
-  const [clickValue, setClickValue] = useState(1)
-  const [autoClick, setAutoClick] = useState(0)
-  const [upgrades, setUpgrades] = useState([])
+  // Try to load progress from localStorage, fallback to defaults
+  const getInitialState = () => {
+    const save = localStorage.getItem('monkeyclicker-save')
+    if (save) {
+      try {
+        const obj = JSON.parse(save)
+        return {
+          money: obj.money ?? 0,
+          monkeyRank: obj.monkeyRank ?? 1,
+          clickValue: obj.clickValue ?? 1,
+          autoClick: obj.autoClick ?? 0,
+          upgrades: obj.upgrades ?? [],
+        }
+      } catch {
+        // If corrupted, fallback to defaults
+        return {
+          money: 0,
+          monkeyRank: 1,
+          clickValue: 1,
+          autoClick: 0,
+          upgrades: [],
+        }
+      }
+    } else {
+      return {
+        money: 0,
+        monkeyRank: 1,
+        clickValue: 1,
+        autoClick: 0,
+        upgrades: [],
+      }
+    }
+  }
+
+  const [money, setMoney] = useState(getInitialState().money)
+  const [monkeyRank, setMonkeyRank] = useState(getInitialState().monkeyRank)
+  const [clickValue, setClickValue] = useState(getInitialState().clickValue)
+  const [autoClick, setAutoClick] = useState(getInitialState().autoClick)
+  const [upgrades, setUpgrades] = useState(getInitialState().upgrades)
   const [showUpgrades, setShowUpgrades] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
 
-  // Level up at every 100 * level money (just increase level, show confetti)
-  React.useEffect(() => {
-    if (money >= level * 100) {
-      setLevel((lvl) => lvl + 1)
+  // Save progress to localStorage whenever relevant state changes
+  useEffect(() => {
+    localStorage.setItem(
+      'monkeyclicker-save',
+      JSON.stringify({
+        money,
+        monkeyRank,
+        clickValue,
+        autoClick,
+        upgrades,
+      })
+    )
+  }, [money, monkeyRank, clickValue, autoClick, upgrades])
+
+  // Monkey Rank up at every 100 * monkeyRank money (just increase rank, show confetti)
+  useEffect(() => {
+    if (money >= monkeyRank * 100) {
+      setMonkeyRank((rank) => rank + 1)
       setShowConfetti(true)
-      setTimeout(() => setShowConfetti(false), 1300) // slightly shorter for smooth fade
+      setTimeout(() => setShowConfetti(false), 1300)
     }
     // eslint-disable-next-line
-  }, [money, level])
+  }, [money, monkeyRank])
 
   // Auto-click effect
-  React.useEffect(() => {
+  useEffect(() => {
     if (autoClick > 0) {
       const interval = setInterval(() => {
         setMoney((m) => m + autoClick)
@@ -116,13 +164,25 @@ function App() {
     setUpgrades((u) => [...u, upgrade.name])
   }
 
+  // Reset progress
+  function resetProgress() {
+    if (window.confirm("Are you sure you want to reset all progress?")) {
+      setMoney(0)
+      setMonkeyRank(1)
+      setClickValue(1)
+      setAutoClick(0)
+      setUpgrades([])
+      localStorage.removeItem('monkeyclicker-save')
+    }
+  }
+
   return (
     <div className="app">
       <Confetti show={showConfetti} />
       <h1>🐒 Monkey Clicker</h1>
       <div className="stats">
         <span>Money: <b>{money}</b></span>
-        <span>Level: <b>{level}</b></span>
+        <span>Monkey Rank: <b>{monkeyRank}</b></span>
       </div>
       <button className="monkey-btn" onClick={() => setMoney(money + clickValue)}>
         <span role="img" aria-label="monkey" style={{ fontSize: 60 }}>🐒</span>
@@ -154,6 +214,9 @@ function App() {
           <button className="close-upgrades" onClick={() => setShowUpgrades(false)}>Close</button>
         </div>
       )}
+      <button className="reset-btn" onClick={resetProgress} style={{marginTop: "1rem"}}>
+        Reset Progress
+      </button>
       <footer>
         <small>
           Made by <a href="https://github.com/mathpunch" target="_blank" rel="noopener noreferrer">mathpunch</a> – Ready for Vercel 🚀
