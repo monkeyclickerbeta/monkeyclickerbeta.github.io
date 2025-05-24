@@ -98,9 +98,6 @@ body {
   z-index: 100;
   min-width: 240px;
   max-width: 90vw;
-  max-height: 80vh;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 
 .centered-popup {
@@ -113,11 +110,24 @@ body {
   justify-content: center;
 }
 
+/* NEW: Scrollable content inside popup */
+.upgrade-popup-scroll {
+  max-height: 60vh;
+  overflow-y: auto;
+  width: 100%;
+  padding-right: 4px;  /* For scrollbar space if needed */
+  box-sizing: border-box;
+}
+
+/* Responsive: more usable on mobile */
 @media (max-width: 600px) {
   .upgrade-popup {
-    max-width: 95vw;
-    max-height: 70vh;
-    padding: 1rem 0.5rem;
+    max-width: 97vw;
+    padding: 0.5rem 0.2rem;
+  }
+  .upgrade-popup-scroll {
+    max-height: 75vh;
+    padding-right: 2px;
   }
 }
 
