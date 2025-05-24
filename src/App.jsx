@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react'
 import './App.css'
 
-// --- Detection thresholds ---
-const CPS_THRESHOLD = 30;         // Max allowed clicks per second
-const INTERVAL_COUNT = 25;        // How many intervals to check for consistency
-const INTERVAL_TOLERANCE = 100;   // ms tolerance for "robotic" clicks
-const MAX_STRIKES = 3;            // How many suspicious detections before lockout
-const STRIKE_WINDOW = 30000;      // ms window for counting strikes
+// --- Detection thresholds (tunable) ---
+const CPS_THRESHOLD = 40          // Max allowed clicks per second (very high)
+const INTERVAL_COUNT = 30         // How many intervals to check for consistency
+const INTERVAL_TOLERANCE = 120    // ms tolerance for "robotic" clicks
+const MAX_STRIKES = 3             // Ban after 3 strikes
+const STRIKE_WINDOW = 60000       // 1 minute window for strikes
+const BAN_DURATION = 10000        // 10 seconds ban
 
 const upgradesData = [
   { name: "Banana Gloves", desc: "+1 money per click", cost: 50, clickBoost: 1 },
@@ -85,6 +86,8 @@ function App() {
   const clickTimestamps = useRef([])
   const [strikes, setStrikes] = useState([])
   const [strikeCount, setStrikeCount] = useState(0)
+  const [detectionCount, setDetectionCount] = useState(0)
+  const [warningMessage, setWarningMessage] = useState('')
 
   // Save progress to localStorage whenever relevant state changes
   useEffect(() => {
@@ -155,18 +158,17 @@ function App() {
     const now = Date.now()
     clickTimestamps.current.push(now)
 
-    // Only keep last 60 clicks for analysis
-    if (clickTimestamps.current.length > 60) {
-      clickTimestamps.current = clickTimestamps.current.slice(-60)
+    if (clickTimestamps.current.length > 100) {
+      clickTimestamps.current = clickTimestamps.current.slice(-100)
     }
 
-    // 1. CPS Check: 30+ clicks in the last second
+    // 1. CPS Check: 40+ clicks in the last second
     const oneSecAgo = now - 1000
     const recentClicks = clickTimestamps.current.filter(ts => ts > oneSecAgo)
     let suspicious = false
     if (recentClicks.length > CPS_THRESHOLD) suspicious = true
 
-    // 2. Consistent Interval Check: 25+ consecutive clicks within ±100ms interval
+    // 2. Consistent Interval Check: 30+ consecutive clicks within ±120ms interval
     if (clickTimestamps.current.length >= INTERVAL_COUNT + 1) {
       const intervals = clickTimestamps.current
         .slice(-INTERVAL_COUNT - 1)
@@ -178,19 +180,32 @@ function App() {
     }
 
     if (suspicious) {
+      if (detectionCount === 0) {
+        setAutoClickerWarning(true)
+        setWarningMessage("⚠️ Suspicious clicking detected! This is just a warning. If this keeps happening, you will receive strikes and may be banned temporarily.")
+        setDetectionCount(1)
+        setTimeout(() => setAutoClickerWarning(false), 2500)
+        return
+      }
       const now = Date.now()
       const newStrikes = strikes.filter(t => now - t < STRIKE_WINDOW).concat(now)
       setStrikes(newStrikes)
       setStrikeCount(newStrikes.length)
-      setAutoClickerWarning(true)
-      setTimeout(() => setAutoClickerWarning(false), 1800)
-      if (newStrikes.length >= MAX_STRIKES) {
+      if (newStrikes.length < MAX_STRIKES) {
+        setAutoClickerWarning(true)
+        setWarningMessage(`🚨 Autoclicker suspicious clicking detected! (${newStrikes.length}/${MAX_STRIKES} strikes)`)
+        setTimeout(() => setAutoClickerWarning(false), 2200)
+      } else {
+        setAutoClickerWarning(true)
+        setWarningMessage(`⛔️ You have been banned for ${BAN_DURATION / 1000} seconds due to repeated suspicious clicking!`)
         setClickDisabled(true)
         setTimeout(() => {
           setClickDisabled(false)
           setStrikes([])
           setStrikeCount(0)
-        }, 8000)
+          setDetectionCount(0)
+          setAutoClickerWarning(false)
+        }, BAN_DURATION)
       }
       return
     }
@@ -208,12 +223,7 @@ function App() {
       </div>
       {autoClickerWarning && (
         <div className="autoclicker-warning">
-          🚨 Autoclicker suspicious clicking detected!
-          <br />
-          {strikeCount < MAX_STRIKES
-            ? <>({strikeCount}/{MAX_STRIKES} strikes)</>
-            : <>Clicking disabled for 8 seconds.</>
-          }
+          {warningMessage}
         </div>
       )}
       <button
