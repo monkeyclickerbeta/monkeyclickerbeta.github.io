@@ -1,0 +1,119 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #fffbe9;
+}
+
+.app {
+  text-align: center;
+  padding: 2rem 1rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stats {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 2rem;
+  font-size: 1.25rem;
+  justify-content: center;
+}
+
+.monkey-btn {
+  background: #ffe066;
+  border: 3px solid #d9b300;
+  border-radius: 50%;
+  width: 140px;
+  height: 140px;
+  margin: 1.5rem 0;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.1s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 32px #ffec99b0;
+}
+
+.monkey-btn:hover {
+  transform: scale(1.08);
+  background: #fff3bf;
+}
+
+.per-click {
+  font-size: 0.95rem;
+  color: #7c6f00;
+  margin-top: 0.3rem;
+}
+
+.upgrade-list {
+  margin: 1.5rem 0;
+  text-align: left;
+  max-width: 320px;
+}
+
+.upgrade-list h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.upgrade-list ul {
+  padding-left: 1.2rem;
+}
+
+.upgrade-popup {
+  background: #fffbe9;
+  border: 2px solid #ffd700;
+  border-radius: 10px;
+  box-shadow: 0 2px 18px #ffd70033;
+  padding: 1.5rem;
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  z-index: 100;
+  min-width: 240px;
+}
+
+.upgrade-option {
+  display: block;
+  background: #ffe066;
+  border: 2px solid #d9b300;
+  border-radius: 8px;
+  margin: 1rem auto;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s;
+}
+
+.upgrade-option:disabled {
+  background: #eee;
+  color: #999;
+  border: 2px solid #ccc;
+  cursor: not-allowed;
+}
+
+.upgrade-option:hover:enabled {
+  background: #fff3bf;
+}
+
+.close-upgrades {
+  margin-top: 0.5rem;
+  background: #eee;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+footer {
+  margin-top: auto;
+  padding: 1rem 0 0.5rem 0;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
