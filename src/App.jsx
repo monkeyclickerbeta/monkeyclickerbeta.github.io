@@ -79,7 +79,7 @@ function Confetti({ show }) {
 }
 
 function App() {
-  // Load/save game state as before...
+  // Try to load progress from localStorage, fallback to defaults
   const getInitialState = () => {
     const save = localStorage.getItem('monkeyclicker-save')
     if (save) {
@@ -93,6 +93,7 @@ function App() {
           upgrades: obj.upgrades ?? [],
         }
       } catch {
+        // If corrupted, fallback to defaults
         return {
           money: 0,
           monkeyRank: 1,
@@ -125,7 +126,7 @@ function App() {
   const [clickDisabled, setClickDisabled] = useState(false)
   const clickTimestamps = useRef([])
 
-  // Save progress
+  // Save progress to localStorage whenever relevant state changes
   useEffect(() => {
     localStorage.setItem(
       'monkeyclicker-save',
@@ -139,7 +140,7 @@ function App() {
     )
   }, [money, monkeyRank, clickValue, autoClick, upgrades])
 
-  // Monkey Rank up
+  // Monkey Rank up at every 100 * monkeyRank money (just increase rank, show confetti)
   useEffect(() => {
     if (money >= monkeyRank * 100) {
       setMonkeyRank((rank) => rank + 1)
