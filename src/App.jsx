@@ -17,8 +17,33 @@ const upgradesData = [
   {
     name: "Golden Banana",
     desc: "+5 money per click",
-    cost: 500,
+    cost: 400, // changed from 500 to 400
     clickBoost: 5,
+  },
+  {
+    name: "Banana Farm",
+    desc: "+5 auto-click per second",
+    cost: 900,
+    autoClick: 5,
+  },
+  {
+    name: "Big Monkey Hands",
+    desc: "+25 money per click",
+    cost: 2500,
+    clickBoost: 25,
+  },
+  {
+    name: "Banana Factory",
+    desc: "+25 auto-click per second",
+    cost: 8000,
+    autoClick: 25,
+  },
+  {
+    name: "Super Golden Banana",
+    desc: "+100 money per click, +100 auto-click per second",
+    cost: 25000,
+    clickBoost: 100,
+    autoClick: 100,
   },
 ]
 
@@ -47,7 +72,9 @@ function Confetti({ show }) {
           />
         )
       })}
-      <div className="confetti-text">Level Up!</div>
+      <div className="confetti-text-upgrade">
+        <span className="confetti-text-shadow">Level Up!</span>
+      </div>
     </div>
   )
 }
@@ -66,7 +93,7 @@ function App() {
     if (money >= level * 100) {
       setLevel((lvl) => lvl + 1)
       setShowConfetti(true)
-      setTimeout(() => setShowConfetti(false), 1500)
+      setTimeout(() => setShowConfetti(false), 1700)
     }
     // eslint-disable-next-line
   }, [money, level])
