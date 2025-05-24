@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react'
 import './App.css'
+import AdminPanel from './AdminPanel'
 
 // --- Detection thresholds (tunable) ---
-const CPS_THRESHOLD = 40          // Max allowed clicks per second (very high)
-const INTERVAL_COUNT = 30         // How many intervals to check for consistency
-const INTERVAL_TOLERANCE = 120    // ms tolerance for "robotic" clicks
-const MAX_STRIKES = 3             // Ban after 3 strikes
-const STRIKE_WINDOW = 60000       // 1 minute window for strikes
-const BAN_DURATION = 10000        // 10 seconds ban
+const CPS_THRESHOLD = 40
+const INTERVAL_COUNT = 30
+const INTERVAL_TOLERANCE = 120
+const MAX_STRIKES = 3
+const STRIKE_WINDOW = 60000
+const BAN_DURATION = 10000
+
+const ADMIN_PASSWORD = "adminozzyonly1122"; // <-- your chosen admin password
 
 const upgradesData = [
   { name: "Banana Gloves", desc: "+1 money per click", cost: 50, clickBoost: 1 },
@@ -89,6 +92,12 @@ function App() {
   const [detectionCount, setDetectionCount] = useState(0)
   const [warningMessage, setWarningMessage] = useState('')
 
+  // Admin panel password state
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [adminAuth, setAdminAuth] = useState(false);
+  const [adminTry, setAdminTry] = useState(false);
+  const [adminInput, setAdminInput] = useState("");
+
   // Save progress to localStorage whenever relevant state changes
   useEffect(() => {
     localStorage.setItem(
@@ -104,7 +113,6 @@ function App() {
       setShowConfetti(true)
       setTimeout(() => setShowConfetti(false), 1300)
     }
-    // eslint-disable-next-line
   }, [money, monkeyRank])
 
   // Auto-click effect
@@ -127,7 +135,6 @@ function App() {
       setStrikeCount(filtered.length)
     }, 1000)
     return () => clearInterval(interval)
-    // eslint-disable-next-line
   }, [strikes])
 
   // Upgrade purchase
@@ -147,7 +154,7 @@ function App() {
       setClickValue(1)
       setAutoClick(0)
       setUpgrades([])
-      localStorage.removeItem('monkeyclicker-save')
+      localStorage.removeItem('monkeyclicker-save');
     }
   }
 
@@ -213,6 +220,28 @@ function App() {
     setMoney(m => m + clickValue)
   }
 
+  // Admin Panel Password prompt
+  function handleAdminAccess() {
+    setAdminTry(true);
+    setAdminInput("");
+  }
+  function handleAdminSubmit(e) {
+    e.preventDefault();
+    if (adminInput === ADMIN_PASSWORD) {
+      setAdminAuth(true);
+      setShowAdmin(true);
+      setAdminTry(false);
+      setAdminInput("");
+    } else {
+      alert("Incorrect password.");
+      setAdminInput("");
+    }
+  }
+  function handleAdminPanelClose() {
+    setShowAdmin(false);
+    setAdminAuth(false);
+  }
+
   return (
     <div className="app">
       <Confetti show={showConfetti} />
@@ -239,6 +268,13 @@ function App() {
       <button className="upgrades-menu-btn" onClick={() => setShowUpgrades(true)}>
         🛒 Upgrades
       </button>
+      <button
+        className="upgrades-menu-btn"
+        style={{marginLeft: 8, background:"#ffb300", borderColor:"#c79b00"}}
+        onClick={handleAdminAccess}
+      >
+        🛠️ Admin Panel
+      </button>
       <div className="upgrade-list">
         <h2>Owned Upgrades</h2>
         <ul>
@@ -264,9 +300,36 @@ function App() {
       <button className="reset-btn" onClick={resetProgress} style={{marginTop: "1rem"}}>
         Reset Progress
       </button>
+      {adminTry && !adminAuth && (
+        <div className="admin-panel-overlay">
+          <form className="admin-panel" onSubmit={handleAdminSubmit}>
+            <h2>Admin Panel Login</h2>
+            <input
+              type="password"
+              placeholder="Enter admin password"
+              value={adminInput}
+              onChange={e => setAdminInput(e.target.value)}
+              autoFocus
+            />
+            <div style={{marginTop: "1em"}}>
+              <button type="submit" className="admin-apply-btn">Enter</button>
+              <button type="button" className="admin-close-btn" onClick={()=>setAdminTry(false)} style={{marginLeft:"1em"}}>Cancel</button>
+            </div>
+          </form>
+        </div>
+      )}
+      {showAdmin && adminAuth && (
+        <AdminPanel
+          money={money}
+          setMoney={setMoney}
+          monkeyRank={monkeyRank}
+          setMonkeyRank={setMonkeyRank}
+          onClose={handleAdminPanelClose}
+        />
+      )}
       <footer>
         <small>
-          Made by Ozzy <a href="https://aboutozzy.vercel.app/" target="_blank" rel="noopener noreferrer">About Me</a> – Have Fun
+          Made by <a href="https://github.com/mathpunch" target="_blank" rel="noopener noreferrer">mathpunch</a> – Ready for Vercel 🚀
         </small>
       </footer>
     </div>
