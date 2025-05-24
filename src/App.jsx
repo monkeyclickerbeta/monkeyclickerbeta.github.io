@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import './App.css'
 
 const upgradesData = [
@@ -79,7 +79,7 @@ function Confetti({ show }) {
 }
 
 function App() {
-  // Try to load progress from localStorage, fallback to defaults
+  // Load/save game state as before...
   const getInitialState = () => {
     const save = localStorage.getItem('monkeyclicker-save')
     if (save) {
@@ -93,7 +93,6 @@ function App() {
           upgrades: obj.upgrades ?? [],
         }
       } catch {
-        // If corrupted, fallback to defaults
         return {
           money: 0,
           monkeyRank: 1,
@@ -121,7 +120,12 @@ function App() {
   const [showUpgrades, setShowUpgrades] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
 
-  // Save progress to localStorage whenever relevant state changes
+  // --- AUTCLICKER DETECTION STATE ---
+  const [autoClickerWarning, setAutoClickerWarning] = useState(false)
+  const [clickDisabled, setClickDisabled] = useState(false)
+  const clickTimestamps = useRef([])
+
+  // Save progress
   useEffect(() => {
     localStorage.setItem(
       'monkeyclicker-save',
@@ -135,7 +139,7 @@ function App() {
     )
   }, [money, monkeyRank, clickValue, autoClick, upgrades])
 
-  // Monkey Rank up at every 100 * monkeyRank money (just increase rank, show confetti)
+  // Monkey Rank up
   useEffect(() => {
     if (money >= monkeyRank * 100) {
       setMonkeyRank((rank) => rank + 1)
@@ -176,6 +180,55 @@ function App() {
     }
   }
 
+  // --- AUTOCLICKER DETECTION ---
+  function handleMonkeyClick() {
+    if (clickDisabled) return
+
+    // Add timestamp for this click
+    const now = Date.now()
+    clickTimestamps.current.push(now)
+
+    // Only keep last 20 clicks
+    if (clickTimestamps.current.length > 20) {
+      clickTimestamps.current = clickTimestamps.current.slice(-20)
+    }
+
+    // 1. CPS Check: 10+ clicks in the last second
+    const oneSecAgo = now - 1000
+    const recentClicks = clickTimestamps.current.filter(ts => ts > oneSecAgo)
+    if (recentClicks.length > 10) {
+      triggerAutoClickerWarning()
+      return
+    }
+
+    // 2. Consistent Interval Check: 7+ consecutive clicks within ±15ms interval
+    if (clickTimestamps.current.length >= 8) {
+      const intervals = clickTimestamps.current
+        .slice(-8)
+        .map((t, i, arr) => i > 0 ? t - arr[i - 1] : null)
+        .slice(1)
+      const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length
+      const allClose = intervals.every(i => Math.abs(i - avg) < 15)
+      if (allClose) {
+        triggerAutoClickerWarning()
+        return
+      }
+    }
+
+    // If not suspicious, process click
+    setMoney(m => m + clickValue)
+  }
+
+  function triggerAutoClickerWarning() {
+    setAutoClickerWarning(true)
+    setClickDisabled(true)
+    setTimeout(() => {
+      setAutoClickerWarning(false)
+      setClickDisabled(false)
+      clickTimestamps.current = []
+    }, 5000) // 5 seconds lockout
+  }
+
   return (
     <div className="app">
       <Confetti show={showConfetti} />
@@ -184,7 +237,18 @@ function App() {
         <span>Money: <b>{money}</b></span>
         <span>Monkey Rank: <b>{monkeyRank}</b></span>
       </div>
-      <button className="monkey-btn" onClick={() => setMoney(money + clickValue)}>
+      {autoClickerWarning && (
+        <div className="autoclicker-warning">
+          🚨 Autoclicker detected! Play fair!<br/>
+          Clicking disabled for 5 seconds.
+        </div>
+      )}
+      <button
+        className="monkey-btn"
+        onClick={handleMonkeyClick}
+        disabled={clickDisabled}
+        style={clickDisabled ? { filter: "grayscale(0.8) blur(1px)" } : {}}
+      >
         <span role="img" aria-label="monkey" style={{ fontSize: 60 }}>🐒</span>
         <div>Click me!</div>
         <div className="per-click">+{clickValue} per click</div>
