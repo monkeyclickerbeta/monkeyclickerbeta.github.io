@@ -13,6 +13,7 @@ const ADMIN_PASSWORD = "adminozzyonly1122";
 const BANNED_KEY = "monkeyclicker-banned";
 const ADMIN_AUTH_KEY = "monkeyclicker-admin-auth";
 
+// === UPGRADE DATA ===
 const upgradesData = [
   { name: "Banana Gloves", desc: "+1 money per click", cost: 50, clickBoost: 1 },
   { name: "Monkey Friend", desc: "Auto-clicks every second", cost: 200, autoClick: 1 },
@@ -21,8 +22,21 @@ const upgradesData = [
   { name: "Big Monkey Hands", desc: "+25 money per click", cost: 1500, clickBoost: 25 },
   { name: "Banana Factory", desc: "+25 auto-click per second", cost: 2500, autoClick: 25 },
   { name: "Super Golden Banana", desc: "+100 money per click, +100 auto-click per second", cost: 15000, clickBoost: 100, autoClick: 100 },
+
+  // 10 new upgrades after 15000
+  { name: "Banana Rocket", desc: "+250 money per click", cost: 25000, clickBoost: 250 },
+  { name: "Monkey Army", desc: "+250 auto-click per second", cost: 40000, autoClick: 250 },
+  { name: "Banana Tycoon", desc: "+1000 money per click", cost: 60000, clickBoost: 1000 },
+  { name: "Monkey Overlord", desc: "+1000 auto-click per second", cost: 85000, autoClick: 1000 },
+  { name: "Banana Stock Exchange", desc: "+5000 money per click", cost: 150000, clickBoost: 5000 },
+  { name: "Banana Planet", desc: "+5000 auto-click per second", cost: 200000, autoClick: 5000 },
+  { name: "Monkey Multiverse", desc: "+20000 money per click", cost: 300000, clickBoost: 20000 },
+  { name: "Banana Black Hole", desc: "+20000 auto-click per second", cost: 400000, autoClick: 20000 },
+  { name: "Infinite Banana", desc: "+100000 money per click", cost: 600000, clickBoost: 100000 },
+  { name: "Monkey God", desc: "+100000 auto-click per second", cost: , autoClick: 1000000 }
 ]
 
+// === CONFETTI EFFECT ===
 function Confetti({ show }) {
   if (!show) return null
   const pieces = Array.from({ length: 20 })
